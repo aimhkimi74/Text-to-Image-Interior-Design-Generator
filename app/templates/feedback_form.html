@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>System Usability Scale Feedback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="mb-6 flex justify-between items-center">
+            <a href="{{ url_for('views.home') }}"
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Home
+            </a>
+        
+            <a href="{{ url_for('admin.feedback_history') }}"
+               class="inline-flex items-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md shadow-sm text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                <i class="fas fa-history mr-2"></i> View My Feedback History
+            </a>
+        </div>                 
+
+        <h1 class="text-3xl font-bold text-center mb-8 text-white">System Usability Scale (SUS) Feedback</h1>
+        <div class="mb-6 bg-white bg-opacity-90 p-4 rounded-md shadow text-gray-700">
+            <p class="text-lg"><i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+            Please rate your experience with the system. Your feedback helps us improve!</p>
+        </div>
+        
+        <div class="bg-white shadow-md rounded-lg p-6 form-container">
+            {% if recent_feedback %}
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                <p class="font-bold">Thank you for your previous feedback!</p>
+                <p>You have already submitted feedback within the last 7 days. Your previous SUS score was {{ initial_sus_score | default('N/A') | round(1) }}.</p>
+                <p>You can submit new feedback if you'd like to update your responses.</p>
+            </div>
+            {% endif %}
+
+            <form id="sus-form" class="space-y-6">
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">1. I think that I would like to use this system frequently.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q1_frequency" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q1_frequency" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q1_frequency" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q1_frequency" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q1_frequency" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">2. I found the system unnecessarily complex.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q2_complexity" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q2_complexity" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q2_complexity" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q2_complexity" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q2_complexity" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">3. I thought the system was easy to use.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q3_ease_of_use" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q3_ease_of_use" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q3_ease_of_use" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q3_ease_of_use" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q3_ease_of_use" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">4. I think that I would need the support of a technical person to be able to use this system.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q4_tech_support" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q4_tech_support" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q4_tech_support" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q4_tech_support" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q4_tech_support" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">5. I found the various functions in this system were well integrated.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q5_integration" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q5_integration" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q5_integration" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q5_integration" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q5_integration" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">6. I thought there was too much inconsistency in this system.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q6_inconsistency" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q6_inconsistency" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q6_inconsistency" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q6_inconsistency" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q6_inconsistency" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">7. I would imagine that most people would learn to use this system very quickly.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q7_learnability" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q7_learnability" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q7_learnability" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q7_learnability" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q7_learnability" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">8. I found the system very complicated to use.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q8_awkwardness" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q8_awkwardness" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q8_awkwardness" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q8_awkwardness" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q8_awkwardness" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">9. I felt very confident using the system.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q9_confidence" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q9_confidence" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q9_confidence" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q9_confidence" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q9_confidence" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label class="block text-gray-700 font-medium mb-2">10. I needed to learn a lot of things before I could get going with this system.</label>
+                    <div class="mt-2 space-y-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="q10_learning_curve" value="1" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">1 (Strongly Disagree)</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q10_learning_curve" value="2" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">2</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q10_learning_curve" value="3" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">3</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q10_learning_curve" value="4" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">4</span>
+                        </label>
+                        <label class="inline-flex items-center ml-4">
+                            <input type="radio" name="q10_learning_curve" value="5" class="form-radio text-indigo-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">5 (Strongly Agree)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label for="comments" class="block text-gray-700 font-medium mb-2">Additional Comments (Optional):</label>
+                    <textarea id="comments" name="comments" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-md">
+                    <label for="user_type" class="block text-gray-700 font-medium mb-2">Your Role / User Type (Optional):</label>
+                    <select id="user_type" name="user_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="">Select your role</option>
+                        <option value="Interior Designer">Interior Designer</option>
+                        <option value="Homeowner">Homeowner</option>
+                        <option value="Real Estate Agent">Real Estate Agent</option>
+                        <option value="Lecturer">Lecturer</option>
+                        <option value="Student">Student</option>
+                        <option value="Researcher">Researcher</option>
+                        <option value="Other">Other</option>
+                    </select> 
+                </div>
+
+                <button type="submit"
+                class="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-md text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-150">
+                <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
+            </form>
+
+            <div id="thank-you-message" class="hidden mt-8 p-4 bg-green-100 border-l-4 border-green-500 rounded-md text-green-800">
+                <div class="flex items-center mb-1">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <h3 class="font-bold">Thank You for Your Feedback!</h3>
+                </div>
+                <p>Your feedback is valuable and will help us improve the system.</p>
+                <p class="mt-2">Your SUS score: <span id="sus-score" class="font-bold text-green-900"></span></p>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('sus-form');
+            const thankYouMessage = document.getElementById('thank-you-message');
+            const susScoreElement = document.getElementById('sus-score');
+            
+            function getCSRFToken() {
+                return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                }
+
+            {% if recent_feedback %}
+            susScoreElement.textContent = "{{ initial_sus_score | default('N/A') | round(1) }}";
+            // Keep form visible so user can submit again
+            {% endif %}
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Collect form data
+                const formData = {
+                    q1_frequency: parseInt(document.querySelector('input[name="q1_frequency"]:checked').value),
+                    q2_complexity: parseInt(document.querySelector('input[name="q2_complexity"]:checked').value),
+                    q3_ease_of_use: parseInt(document.querySelector('input[name="q3_ease_of_use"]:checked').value),
+                    q4_tech_support: parseInt(document.querySelector('input[name="q4_tech_support"]:checked').value),
+                    q5_integration: parseInt(document.querySelector('input[name="q5_integration"]:checked').value),
+                    q6_inconsistency: parseInt(document.querySelector('input[name="q6_inconsistency"]:checked').value),
+                    q7_learnability: parseInt(document.querySelector('input[name="q7_learnability"]:checked').value),
+                    q8_awkwardness: parseInt(document.querySelector('input[name="q8_awkwardness"]:checked').value),
+                    q9_confidence: parseInt(document.querySelector('input[name="q9_confidence"]:checked').value),
+                    q10_learning_curve: parseInt(document.querySelector('input[name="q10_learning_curve"]:checked').value),
+                    comments: document.getElementById('comments').value,
+                    user_type: document.getElementById('user_type').value,
+                };
+
+                try {
+                    const response = await fetch('/admin/api/feedback', {
+                        method: 'POST',
+                        headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCSRFToken()  
+                            },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+                    console.log(data);
+                    if (response.ok) {
+                        if (data.sus_score !== undefined) {
+                            susScoreElement.textContent = parseFloat(data.sus_score).toFixed(1);
+                        } else {
+                            susScoreElement.textContent = "N/A";
+                        }
+                        form.classList.add('hidden');
+                        thankYouMessage.classList.remove('hidden');
+                    } else {
+                        alert(data.message || 'Failed to submit feedback. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error submitting feedback:', error);
+                    alert('An error occurred while submitting feedback.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

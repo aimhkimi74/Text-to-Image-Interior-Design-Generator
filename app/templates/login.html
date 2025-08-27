@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Living Room Style Analyzer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .feature-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative">
+  
+  <!-- Admin Login Button Top Right -->
+  <div class="absolute top-5 right-5">
+    <a href="{{ url_for('auth.admin_login') }}" 
+       class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-md shadow-md">
+      Admin Login
+    </a>
+  </div>
+
+  <!-- Logo and Title -->
+  <div class="text-center mb-6 text-white">
+    <i class="fas fa-couch text-5xl text-orange-400 mb-3"></i>
+    <h1 class="text-3xl font-semibold mb-2">Living Room Style Analyzer</h1>
+    <p class="text-lg">Transform your living space with AI-powered design</p>
+  </div>
+
+  <div class="w-full max-w-4xl flex flex-col md:flex-row gap-6">
+    <!-- Features Section - New -->
+    <div class="md:w-1/2 space-y-4 hidden md:block">
+      <div class="feature-card bg-white bg-opacity-90 rounded-xl p-5 shadow-md">
+        <div class="flex items-center mb-3">
+          <div class="bg-orange-100 p-3 rounded-full mr-4">
+            <i class="fas fa-magic text-orange-500 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg">AI-Powered Design</h3>
+        </div>
+        <p class="text-gray-600">Get instant AI-generated visualizations of your living room ideas with just a text description.</p>
+      </div>
+      
+      <div class="feature-card bg-white bg-opacity-90 rounded-xl p-5 shadow-md">
+        <div class="flex items-center mb-3">
+          <div class="bg-blue-100 p-3 rounded-full mr-4">
+            <i class="fas fa-palette text-blue-500 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg">Style Analysis</h3>
+        </div>
+        <p class="text-gray-600">Discover your preferred interior design style with our intelligent analyzer.</p>
+      </div>
+      
+      <div class="feature-card bg-white bg-opacity-90 rounded-xl p-5 shadow-md">
+        <div class="flex items-center mb-3">
+          <div class="bg-green-100 p-3 rounded-full mr-4">
+            <i class="fas fa-history text-green-500 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg">Save & Compare</h3>
+        </div>
+        <p class="text-gray-600">Save your designs and compare different style options to find your perfect match.</p>
+      </div>
+    </div>
+    
+    <!-- Login Form -->
+    <div class="w-full md:w-1/2 bg-white rounded-xl shadow-lg p-6 md:p-8">
+      <div class="text-center mb-6">
+        <i class="fas fa-couch text-4xl text-orange-500 mb-3"></i>
+        <h1 class="text-xl font-semibold text-gray-800 mb-1">Living Room Style Analyzer</h1>
+        <p class="text-sm text-gray-600">Sign in to continue</p>
+      </div>
+
+      <div id="flash-messages" class="mb-4"></div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-envelope text-gray-400"></i>
+            </div>
+            <input type="email" id="email" name="email" required
+              class="w-full pl-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400">
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-lock text-gray-400"></i>
+            </div>
+            <input type="password" id="password" name="password" required
+              class="w-full pl-10 pr-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400">
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <i class="fas fa-eye text-gray-400 cursor-pointer" id="password-toggle"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input type="checkbox" id="remember-me" name="remember-me" class="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded">
+            <label for="remember-me" class="ml-2 block text-sm text-gray-700">Remember me</label>
+          </div>
+          <a href="{{ url_for('auth.forgot_password') }}" class="text-sm text-orange-500 hover:text-blue-600">Forgot password?</a>
+        </div>
+
+        <button type="submit" id="login-button" class="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-md transition duration-200 flex items-center justify-center">
+          <span>Sign In</span>
+          <i id="loading-spinner" class="fas fa-spinner loading-spinner ml-2 hidden"></i>
+        </button>
+      </form>
+
+      <div class="text-center mt-5 text-sm text-gray-600">
+        <p>
+          Don't have an account? 
+          <a href="{{ url_for('auth.signup') }}" class="text-orange-500 hover:text-blue-600 font-medium">Sign up</a>
+        </p>
+        
+      <p class="mt-2">
+        Didn't verify your account?
+        <button id="go-verify-btn" class="text-orange-500 hover:text-blue-600 font-medium ml-1" type="button">
+          Go to Verification Form
+        </button>
+      </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <div class="mt-8 text-center text-white text-sm">
+    <p>© 2025 Living Room Style Analyzer | <a href="#" class="hover:underline">Privacy Policy</a> | <a href="#" class="hover:underline">Terms of Service</a></p>
+  </div>
+
+  <script>
+    function showMessage(message, type) {
+      const flashDiv = document.getElementById('flash-messages');
+      const bgColor =
+        type === 'error'
+          ? 'bg-red-50 border-red-200 text-red-700'
+          : 'bg-green-50 border-green-200 text-green-700';
+      flashDiv.innerHTML = `<div class="p-3 rounded-md border ${bgColor} text-sm text-center">${message}</div>`;
+    }
+  
+    window.addEventListener('DOMContentLoaded', () => {
+      localStorage.removeItem('currentSessionId');
+  
+      // Toggle password visibility
+      document.getElementById('password-toggle').addEventListener('click', function () {
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+  
+        // Toggle eye icon
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+      });
+  
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('remember-me')?.checked || false;
+        const loginButton = document.getElementById('login-button');
+        const spinner = document.getElementById('loading-spinner');
+  
+        if (!email || !password) {
+          showMessage('All fields are required', 'error');
+          return;
+        }
+  
+        try {
+          loginButton.querySelector('span').textContent = 'Signing in...';
+          spinner.classList.remove('hidden');
+          loginButton.disabled = true;
+
+          // Fetch a valid CSRF token from backend first
+          const csrfResponse = await fetch('/auth/csrf-token', {
+            credentials: 'include' 
+          });
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.csrf_token;
+          
+          const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ email, password, remember: rememberMe }),
+            credentials: 'include'
+          });
+  
+          const data = await response.json();
+  
+          if (response.ok) {
+            showMessage('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+              window.location.href = data.redirect || '/home';
+            }, 1500);
+          } else {
+            if (data.reason === 'unverified') {
+              showMessage(data.message || 'Please verify your account.', 'error');
+
+              // Save email temporarily in localStorage
+              localStorage.setItem('unverifiedEmail', email);
+
+              // Redirect to signup page (with verify form)
+              if (data.redirect) {
+                setTimeout(() => {
+                  window.location.href = data.redirect;
+                }, 2000);
+              }
+            }
+            else {
+              showMessage(data.message || 'Login failed. Please try again.', 'error');
+            }
+            spinner.classList.add('hidden');
+            loginButton.disabled = false;
+            loginButton.querySelector('span').textContent = 'Sign In';
+          }
+        } catch (err) {
+          console.error('Error during login:', err);
+          showMessage('Login failed. Please try again.', 'error');
+          spinner.classList.add('hidden');
+          loginButton.disabled = false;
+          loginButton.querySelector('span').textContent = 'Sign In';
+        }
+      });
+  
+      const emailInput = document.getElementById('email');
+      emailInput.addEventListener('blur', function () {
+        const email = this.value.trim();
+        if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+          this.classList.add('border-red-500');
+          showMessage('Please enter a valid email address', 'error');
+        } else {
+          this.classList.remove('border-red-500');
+        }
+      });
+    });
+    
+    document.getElementById('go-verify-btn').addEventListener('click', () => {
+      // Set a flag to force show verify form even without email
+      sessionStorage.setItem('forceShowVerify', 'true');
+      window.location.href = '/auth/signup';
+    });
+
+    document.getElementById('resend-btn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        showMessage('Enter your email first to resend verification.', 'error');
+        return;
+      }
+    
+      try {
+        const csrfResponse = await fetch('/auth/csrf-token', { credentials: 'include' });
+        const csrfData = await csrfResponse.json();
+        const csrfToken = csrfData.csrf_token;
+    
+        const response = await fetch('/auth/resend-code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ email }),
+            credentials: 'include'
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+          showMessage(data.message || 'Verification email resent successfully.', 'success');
+        } else {
+          showMessage(data.message || 'Failed to resend verification email.', 'error');
+        }
+      } catch (err) {
+        console.error('Resend verification error:', err);
+        showMessage('Failed to resend email. Try again later.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

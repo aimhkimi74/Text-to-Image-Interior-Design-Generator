@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Admin Portal - Living Room Style Analyzer{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  {% block head %}{% endblock %}
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+    }
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow-md">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fas fa-user-shield text-2xl"></i>
+        <h1 class="text-xl font-semibold">Admin Portal</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="text-sm bg-white/10 px-3 py-1 rounded-full">
+          Welcome, {{ current_user.username }}
+        </span>
+        <!-- More Visible Logout Button -->
+        <a href="{{ url_for('auth.logout') }}" 
+           class="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-md shadow-md flex items-center gap-2 transition duration-200">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Admin Footer -->
+  <footer class="bg-indigo-600 text-white text-center py-4">
+    <p class="text-sm">© 2025 Living Room Style Analyzer | Admin Portal</p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

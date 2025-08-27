@@ -1,0 +1,27 @@
+# --- Core AI ---
+# Install PyTorch separately per https://pytorch.org/get-started/locally/
+diffusers
+accelerate
+transformers
+pillow
+
+# --- Web & app ---
+flask==3.1.0
+flask-cors==5.0.1
+flask-login==0.6.3
+flask-wtf==1.2.1
+flask-mail==0.9.1
+flask-limiter==3.5.0
+flask-sqlalchemy==3.1.1
+sqlalchemy==2.0.30
+python-dotenv==1.1.0
+requests==2.31.0
+
+# --- Migrations ---
+flask-migrate==4.0.5
+alembic>=1.13.0
+
+# --- Optional utilities (only if you actually use them) ---
+# numpy==1.24.4
+# pandas==2.2.2
+# tqdm

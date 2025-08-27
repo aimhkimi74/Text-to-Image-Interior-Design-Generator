@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Living Room Style Analyzer - Get AI-powered interior design suggestions" />
+  <meta name="keywords" content="interior design, living room, AI, style analyzer, home decor" />
+  <meta name="author" content="Your Name" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Living Room Style Analyzer</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      overflow: hidden;
+      font-size: 0.95rem;
+    }
+    #chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .user-message {
+      align-self: flex-end;
+      background-color: #e3f2fd;
+      border-radius: 0.75rem 0.75rem 0 0.75rem;
+      padding: 0.6rem 0.8rem;
+      max-width: 80%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+    }
+    .bot-message {
+      align-self: flex-start;
+      background-color: white;
+      border-radius: 0.75rem 0.75rem 0.75rem 0;
+      padding: 0.6rem 0.8rem;
+      max-width: 80%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+    }
+    .message-time {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-top: 0.2rem;
+      text-align: right;
+    }
+    .tip-slide {
+      transition: opacity 0.3s ease;
+    }
+    
+    /* Chat item styles */
+    .chat-item {
+      transition: background-color 0.2s;
+    }
+    .chat-item.active {
+      background-color: rgba(249, 115, 22, 0.1);
+    }
+    .chat-item-content {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-item-actions {
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s, opacity 0.2s;
+    }
+    .chat-item:hover .chat-item-actions {
+      visibility: visible;
+      opacity: 1;
+    }
+    .rename-chat-btn, .delete-chat-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+    }
+    .submit-rating.submitted {
+      background-color: #6b7280; /* Tailwind gray-500 */
+      cursor: not-allowed;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    /* Rating system styles */
+    .star-rating {
+      display: flex;
+      align-items: center;
+    }
+    .star-icon {
+      color: #d1d5db;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .star-icon.active, .star-icon:hover {
+      color: #f59e0b;
+    }
+    
+    /* Style explanation box */
+    .style-explanation {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background-color: #f8f9fa;
+      border-radius: 0.5rem;
+      border-left: 3px solid #3b82f6;
+      font-size: 0.85rem;
+    }
+    
+    /* Favorites and rating containers */
+    .rating-container, .style-explanation {
+      display: block;
+    }
+    
+    /* Image container styles */
+    .image-container {
+      position: relative;
+      margin-top: 0.75rem;
+    }
+    .image-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body class="bg-[#fdf6ee]">
+  <!-- Top Navigation -->
+  <header class="hero-header px-6 py-4 shadow-md fixed top-0 left-0 right-0 z-50" style="background: linear-gradient(to right, #ffe3ca, #f8d3c6); border-radius: 0 0 2rem 2rem;">
+    <div class="max-w-full flex justify-between items-center">
+      <!-- Logo Left -->
+      <div class="flex-shrink-0">
+        <a href="{{ url_for('views.home') }}" class="text-2xl font-bold flex items-center gap-2 text-[#2c3e50]">
+          <i class="fas fa-couch text-orange-600"></i> Living Room Style Analyzer
+        </a>
+      </div>
+  
+      <!-- Buttons Right -->
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('views.help') }}" class="bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 text-sm">
+          <i class="fas fa-question-circle"></i> Help
+        </a>
+        <a href="{{ url_for('auth.profile') }}" class="bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 text-sm">
+          <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 text-sm">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+        <a href="{{ url_for('admin.feedback_form') }}" class="bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 text-sm">
+          <i class="fas fa-comments"></i> Feedback
+        </a>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Mobile menu (hidden by default) -->
+  <div id="mobile-menu" class="fixed top-[72px] right-0 bg-[#34495e] text-white p-4 rounded-bl-lg shadow-lg z-40 hidden">
+    <div class="flex flex-col gap-3">
+      <a href="{{ url_for('views.help') }}" class="flex items-center gap-2 hover:text-orange-400">
+        <i class="fas fa-question-circle"></i> Help
+      </a>
+      <a href="{{ url_for('auth.profile') }}" class="flex items-center gap-2 hover:text-orange-400">
+        <i class="fas fa-user"></i> Profile
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 hover:text-orange-400">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+      <a href="{{ url_for('admin.feedback_form') }}" class="bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 text-sm">
+        <i class="fas fa-comments"></i> Feedback
+    </a>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="flex h-screen pt-[72px]">
+    <aside id="sidebar" class="w-60 bg-[#fffaf5] shadow-md hidden md:block fixed top-[56px] bottom-0 left-0 overflow-y-auto z-30 transition-all duration-300">
+      <div class="p-3">
+        <button id="new-design-btn" class="w-full bg-red-500 text-white py-1.5 rounded-full mb-3 hover:bg-red-600 text-sm">
+          <i class="fas fa-plus"></i> New Design
+        </button>
+        <div id="flash-messages" class="fixed top-16 right-4 w-80 z-50"></div>
+
+        <div class="mb-4">
+          <h3 class="font-semibold mb-1.5 text-sm"><i class="fas fa-history"></i> Recent Designs</h3>
+          <div class="space-y-1.5 chat-list overflow-y-auto max-h-[30vh]">
+            <!-- Chat items will be populated here by JavaScript -->
+          </div>
+        </div>
+        
+        <!-- Style selector can remain if you're using it -->
+        <div class="mb-4">
+          <h3 class="font-semibold mb-1.5 text-sm"><i class="fas fa-paint-brush"></i> Style Preference</h3>
+          <select id="style-selector" class="w-full p-1.5 border border-gray-300 rounded-full text-sm">
+            <option value="auto">Auto-detect</option>
+            <option value="modern">Modern</option>
+            <option value="scandinavian">Scandinavian</option>
+            <option value="industrial">Industrial</option>
+            <option value="mid-century">Mid-Century</option>
+            <option value="traditional">Traditional</option>
+            <option value="coastal">Coastal</option>
+            <option value="rustic">Rustic</option>
+          </select>
+        </div>        
+      </div>
+    </aside>
+
+    <!-- Main Content Area - ChatGPT-like responsive layout -->
+    <main class="flex-1 md:ml-60 flex flex-col h-[calc(100vh-56px)] transition-all duration-300">
+      <!-- Chat Messages Container -->
+      <div class="flex-1 overflow-y-auto flex flex-col items-center overflow-x-hidden" style="padding-bottom: 7rem;">
+        <div id="chat-messages" class="w-full max-w-3xl px-3 pb-[100px]">
+          <!-- Messages will be populated here -->
+          {% for message in messages %}
+          <div id="msg-{{ message.id }}" class="{{ 'user-message' if message.is_user else 'bot-message' }} mb-3">
+            <p>{{ message.content }}</p>
+        
+            {% if message.image_url %}
+            <div class="image-container mt-2">
+              <img src="{{ message.image_url }}" alt="Generated design" class="rounded-lg max-w-full" />
+            </div>
+            <!-- Insert Rating UI below -->
+            <div class="rating-container mt-3 p-3 bg-gray-50 rounded-lg shadow-sm max-w-md">
+              <h4 class="font-semibold mb-2 text-gray-700">Rate this image</h4>
+          
+              <div class="star-rating flex items-center mb-2" data-category="relevance">
+                <span class="mr-2 text-sm font-medium text-gray-600">Prompt Relevance:</span>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="1" data-category="relevance"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="2" data-category="relevance"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="3" data-category="relevance"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="4" data-category="relevance"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="5" data-category="relevance"></i>
+              </div>
+          
+              <div class="star-rating flex items-center mb-2" data-category="quality">
+                <span class="mr-2 text-sm font-medium text-gray-600">Image Quality:</span>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="1" data-category="quality"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="2" data-category="quality"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="3" data-category="quality"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="4" data-category="quality"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="5" data-category="quality"></i>
+              </div>
+          
+              <div class="star-rating flex items-center mb-4" data-category="style">
+                <span class="mr-2 text-sm font-medium text-gray-600">Style Accuracy:</span>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="1" data-category="style"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="2" data-category="style"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="3" data-category="style"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="4" data-category="style"></i>
+                <i class="far fa-star star-icon cursor-pointer text-lg" data-rating="5" data-category="style"></i>
+              </div>
+          
+              <button class="favorite-button bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
+                      data-image="{{ message.image_url }}"
+                      data-prompt="{{ message.prompt }}"
+                      data-favorite-id="{{ message.favorite_id }}">
+                <i class="fas fa-star"></i> Favorite
+              </button>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          
+          <!-- Welcome message when no messages exist -->
+          {% if messages|length == 0 %}
+          <div class="bot-message mb-3 mt-4">
+            <h2 class="font-semibold text-base mb-1">Welcome to Living Room Style Analyzer</h2>
+            <p class="text-sm">Describe your dream living room, and I'll help you analyze its style and generate design ideas!</p>
+            <p class="text-sm mt-2">Simply type your description below and I'll create an AI-generated image of your living room design.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Floating Input Bar -->
+      <div class="fixed bottom-6 z-40 left-[270px] right-4">
+        <div class="w-full max-w-3xl mx-auto">
+          <form id="chat-form" class="flex items-center gap-2 px-4 py-3 rounded-full shadow-md border border-gray-200 bg-white">
+            <textarea id="chat-input" rows="1" placeholder="Ask anything..." 
+              class="flex-grow border-none text-sm focus:outline-none focus:ring-0 resize-none bg-transparent"></textarea>
+
+            <button type="button" class="text-gray-500 hover:text-orange-400">
+              <i class="fas fa-sliders-h"></i>
+            </button>
+
+            <button type="submit" id="send-btn"
+              class="bg-orange-400 hover:bg-orange-500 text-white px-5 py-2 rounded-full font-medium text-sm shadow transition">
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+      
+  <!-- Loading Indicator -->
+  <div id="loading-indicator" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-5 rounded-lg shadow-lg flex flex-col items-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mb-3"></div>
+      <p class="text-gray-700">Generating your design...</p>
+    </div>
+  </div>
+
+  <!-- Style Explanation Modal -->
+  <div id="style-explanation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-5 rounded-lg shadow-lg w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Style Analysis</h3>
+        <button id="close-style-modal" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="style-explanation-content">
+        <!-- Style explanation will be inserted here -->
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button id="style-feedback-btn" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-600">
+          Provide Feedback
+        </button>
+      </div>
+    </div>
+  </div>
+
+<!-- Style Feedback Modal -->
+<div id="style-feedback-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-5 rounded-lg shadow-lg w-full max-w-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold">Style Feedback</h3>
+      <button id="close-feedback-modal" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <p class="mb-3 text-sm">If you think the detected style is incorrect, please select the correct style:</p>
+    <select id="corrected-style" class="w-full p-2 border border-gray-300 rounded-lg mb-4">
+      <option value="" disabled selected>Select correct style</option>
+      <option value="modern">Modern</option>
+      <option value="contemporary">Contemporary</option>
+      <option value="traditional">Traditional</option>
+      <option value="industrial">Industrial</option>
+      <option value="scandinavian">Scandinavian</option>
+      <option value="mid-century">Mid-Century Modern</option>
+      <option value="coastal">Coastal</option>
+      <option value="rustic">Rustic</option>
+    </select>
+    <div class="flex justify-end">
+      <button id="submit-style-feedback" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-600">
+        Submit Feedback
+      </button>
+    </div>
+  </div>
+</div>
+
+</main>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof loadFavorites === 'function') {
+      loadFavorites();
+    }
+    showRating();
+
+    // Scroll to specific message from profile "View" button
+    const urlParams = new URLSearchParams(window.location.search);
+    const scrollToId = urlParams.get('scroll_to_id');
+
+    if (scrollToId) {
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 300ms = 6 seconds
+    const interval = setInterval(() => {
+      const el = document.getElementById(scrollToId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-orange-500', 'rounded-md', 'transition');
+        setTimeout(() => {
+          el.classList.remove('ring-2', 'ring-orange-500', 'rounded-md', 'transition');
+        }, 2000);
+        clearInterval(interval);
+      } else if (++attempts > maxAttempts) {
+        clearInterval(interval);
+        console.warn('Scroll target not found after waiting');
+      }
+    }, 300);
+  }
+
+    // Close style explanation modal
+    document.getElementById('close-style-modal')?.addEventListener('click', function () {
+      document.getElementById('style-explanation-modal').classList.add('hidden');
+    });
+
+    // Open style feedback modal and hide explanation modal
+    document.getElementById('style-feedback-btn')?.addEventListener('click', function () {
+      const modal = document.getElementById('style-feedback-modal');
+      modal.classList.remove('hidden');
+      document.getElementById('style-explanation-modal').classList.add('hidden');
+
+      const lastBotImage = document.querySelector('.bot-message img');
+      const styleDiv = document.querySelector('.bot-message .style-explanation');
+      const detectedStyle = styleDiv?.querySelector('strong')?.textContent?.replace('Detected Style:', '').trim();
+
+      if (lastBotImage?.src && detectedStyle) {
+        modal.dataset.imageUrl = lastBotImage.src;
+        modal.dataset.originalStyle = detectedStyle;
+      }
+    });
+
+    // Close style feedback modal
+    document.getElementById('close-feedback-modal')?.addEventListener('click', function () {
+      document.getElementById('style-feedback-modal').classList.add('hidden');
+    });
+
+    // Submit feedback button click handler
+    document.getElementById('submit-style-feedback')?.addEventListener('click', async function () {
+      const correctedStyle = document.getElementById('corrected-style').value;
+      const imageUrl = document.getElementById('style-feedback-modal').dataset.imageUrl;
+      const originalStyle = document.getElementById('style-feedback-modal').dataset.originalStyle;
+
+      if (!correctedStyle) {
+        alert('Please select a style before submitting feedback.');
+        return;
+      }
+      if (!imageUrl || !originalStyle) {
+        alert('Missing image or original style information.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/style-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            original_style: originalStyle,
+            corrected_style: correctedStyle
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to submit feedback');
+        }
+
+        showSuccess('Thank you for your feedback!');
+        document.getElementById('style-feedback-modal').classList.add('hidden');
+      } catch (error) {
+        console.error('Error submitting style feedback:', error);
+        showError(`Failed to submit feedback: ${error.message}`);
+      }
+    });
+
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button')?.addEventListener('click', function () {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Sidebar toggle
+    document.getElementById('sidebar-toggle')?.addEventListener('click', toggleSidebar);
+  });
+</script>
+<script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

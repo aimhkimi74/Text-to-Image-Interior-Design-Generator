@@ -1,0 +1,455 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}SUS Admin Dashboard{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .graph-container {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .graph-container canvas {
+    max-height: 340px; /* Keeps chart height professional */
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* For full-width charts */
+  .graph-container.full-width canvas {
+    max-height: 420px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-center mb-8">Admin Dashboard</h1>
+
+  <!-- Navigation -->
+  <div class="flex justify-center mb-8 space-x-4">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Dashboard</a>
+    <a href="{{ url_for('admin.admin_feedback_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Feedback List</a>
+    <a href="{{ url_for('admin.admin_user_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">User Management</a>
+    <a href="{{ url_for('admin.admin_create_user') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Create Admin</a>
+  </div>
+
+  <!-- Key Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">Total Feedback</h2>
+      <p class="text-4xl font-bold text-blue-600">{{ total_feedback }}</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">Average SUS Score</h2>
+      <p class="text-4xl font-bold {% if avg_score >= 68 %}text-green-600{% else %}text-red-600{% endif %}">{{ avg_score }}</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">Images Generated</h2>
+      <p class="text-4xl font-bold text-purple-600">{{ total_generated_images }}</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-2">Most Improved User</h2>
+      {% if improved_user_display %}
+        <p class="text-xl font-bold text-green-600">{{ improved_user_display }}</p>
+        <p class="text-sm text-gray-500 mt-1">+{{ most_improved_score }} SUS points</p>
+      {% else %}
+        <p class="text-sm text-gray-500">No improvement data</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="graph-container">
+      <h2 class="text-xl font-semibold mb-4">SUS Score Trend</h2>
+      <canvas id="susTrendChart"></canvas>
+    </div>
+
+    <div class="graph-container">
+      <h2 class="text-xl font-semibold mb-4">Image Generation (30 Days)</h2>
+      <canvas id="imageVolumeChart"></canvas>
+    </div>
+
+    <div class="graph-container">
+      <h2 class="text-xl font-semibold mb-4">Average Scores by Question</h2>
+      <canvas id="questionScoresChart"></canvas>
+    </div>
+
+    <div class="graph-container">
+      <h2 class="text-xl font-semibold mb-4">User Status Breakdown</h2>
+      <canvas id="userStatusChart"></canvas>
+    </div>
+
+
+    <div class="graph-container">
+      <h2 class="text-xl font-semibold mb-4">Top Users by Image Generation</h2>
+      <canvas id="topUsersChart"></canvas>
+    </div>
+    
+
+    <div class="graph-container full-width col-span-1 lg:col-span-2">
+      <h2 class="text-xl font-semibold text-[#2c3e50] mb-4">Design Activity Over Time</h2>
+      <canvas id="designActivityChart"></canvas>
+    </div>
+
+    {% if style_labels and style_counts and style_counts|sum > 0 %}
+    <div class="graph-container full-width col-span-1 lg:col-span-2">
+      <h2 class="text-xl font-semibold text-[#2c3e50] mb-4">Most Popular Detected Styles</h2>
+      <canvas id="popularStylesChart"></canvas>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-6 mt-8 text-center text-gray-500 col-span-1 lg:col-span-2">
+      <h2 class="text-xl font-semibold text-[#2c3e50] mb-4">Most Popular Detected Styles</h2>
+      No data available.
+    </div>
+    {% endif %}
+
+    {% if avg_rating_labels and avg_rating_scores and avg_rating_scores|sum > 0 %}
+    <div class="graph-container full-width col-span-1 lg:col-span-2">
+      <h2 class="text-xl font-semibold text-[#2c3e50] mb-4">Average Ratings by Style</h2>
+      <canvas id="ratingsByStyleChart"></canvas>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-6 mt-8 text-center text-gray-500 col-span-1 lg:col-span-2">
+      <h2 class="text-xl font-semibold text-[#2c3e50] mb-4">Average Ratings by Style</h2>
+      No ratings available yet.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Feedback -->
+  <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Recent Feedback</h2>
+      <a href="{{ url_for('admin.admin_feedback_list') }}" class="text-blue-600 hover:text-blue-800">View All</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">User</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">User Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">SUS Score</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for feedback in recent_feedback %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ feedback.user.username }}</div>
+              <div class="text-sm text-gray-500">{{ feedback.user.email }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ feedback.user_type or 'Not specified' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if feedback.sus_score >= 68 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                {{ feedback.sus_score|round(1) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ feedback.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <a href="{{ url_for('admin.admin_feedback_detail', feedback_id=feedback.id) }}" class="text-blue-600 hover:text-blue-900">View</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-sm text-gray-500">No feedback available</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Export CSV -->
+  <div class="flex justify-end">
+    <a href="{{ url_for('admin.export_feedback_csv') }}"
+       class="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 {% if total_feedback == 0 %}opacity-50 cursor-not-allowed pointer-events-none{% endif %}">
+      <i class="fas fa-download mr-2"></i> Export Data (CSV)
+    </a>
+  </div>
+</div>
+
+<!-- JS: Chart Rendering -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  function hideContainerIfNoData(canvasId, dataArray) {
+    const el = document.getElementById(canvasId);
+    if (!el) return false;
+    if (!dataArray || dataArray.length === 0 || dataArray.every(v => v === 0)) {
+      // Hide the parent graph-container if no data
+      el.closest('.graph-container').style.display = 'none';
+      return false;
+    }
+    return true;
+  }
+
+  // === SUS Score Trend ===
+  if (hideContainerIfNoData('susTrendChart', {{ sus_trend_scores|tojson }})) {
+    new Chart(document.getElementById('susTrendChart'), {
+      type: 'line',
+      data: {
+        labels: {{ sus_trend_dates | tojson }},
+        datasets: [{
+          label: 'Avg SUS Score',
+          data: {{ sus_trend_scores | tojson }},
+          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { min: 0, max: 100, title: { display: true, text: 'SUS Score' } },
+          x: { title: { display: true, text: 'Date' } }
+        }
+      }
+    });
+  }
+
+  // === Image Generation Volume ===
+  if (hideContainerIfNoData('imageVolumeChart', {{ image_generation_counts|tojson }})) {
+    new Chart(document.getElementById('imageVolumeChart'), {
+      type: 'line',
+      data: {
+        labels: {{ image_generation_dates | tojson }},
+        datasets: [{
+          label: 'Images Generated',
+          data: {{ image_generation_counts | tojson }},
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderColor: 'rgba(16, 185, 129, 1)',
+          pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+          fill: true,
+          borderWidth: 2,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Images per Day' } },
+          x: { title: { display: true, text: 'Date' } }
+        }
+      }
+    });
+  }
+
+  // === Average Question Scores ===
+  const questionData = [
+    {{ avg_questions.q1 or 0 }}, {{ avg_questions.q2 or 0 }}, {{ avg_questions.q3 or 0 }},
+    {{ avg_questions.q4 or 0 }}, {{ avg_questions.q5 or 0 }}, {{ avg_questions.q6 or 0 }},
+    {{ avg_questions.q7 or 0 }}, {{ avg_questions.q8 or 0 }}, {{ avg_questions.q9 or 0 }},
+    {{ avg_questions.q10 or 0 }}
+  ];
+  if (hideContainerIfNoData('questionScoresChart', questionData)) {
+    new Chart(document.getElementById('questionScoresChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10'],
+        datasets: [{
+          label: 'Avg Score',
+          data: questionData,
+          backgroundColor: 'rgba(59, 130, 246, 0.7)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 5, title: { display: true, text: 'Score (1–5)' } },
+          x: { title: { display: true, text: 'Question #' } }
+        }
+      }
+    });
+  }
+
+  // === User Status Breakdown ===
+  const userStatusData = [{{ active_count }}, {{ blocked_count }}];
+  if (hideContainerIfNoData('userStatusChart', userStatusData)) {
+    new Chart(document.getElementById('userStatusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Active Users', 'Blocked Users'],
+        datasets: [{
+          data: userStatusData,
+          backgroundColor: ['#10B981', '#EF4444']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+
+  // === Top Generated Styles ===
+  if (hideContainerIfNoData('topStylesChart', {{ top_styles_counts|tojson }})) {
+    new Chart(document.getElementById('topStylesChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ top_styles_labels | tojson }},
+        datasets: [{
+          label: 'Times Generated',
+          data: {{ top_styles_counts | tojson }},
+          backgroundColor: 'rgba(245, 158, 11, 0.7)',
+          borderColor: 'rgba(245, 158, 11, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Count' } },
+          x: { title: { display: true, text: 'Style' } }
+        }
+      }
+    });
+  }
+
+  // === Top Users by Image Generation ===
+  if (hideContainerIfNoData('topUsersChart', {{ top_user_counts|tojson }})) {
+    new Chart(document.getElementById('topUsersChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ top_user_labels | tojson }},
+        datasets: [{
+          label: 'Images Generated',
+          data: {{ top_user_counts | tojson }},
+          backgroundColor: 'rgba(59, 130, 246, 0.7)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        scales: {
+          x: { beginAtZero: true, title: { display: true, text: 'Image Count' } }
+        }
+      }
+    });
+  }
+
+  // === Favorite Style Distribution ===
+  if (hideContainerIfNoData('favoriteStyleChart', {{ fav_style_counts|tojson }})) {
+    new Chart(document.getElementById('favoriteStyleChart'), {
+      type: 'doughnut',
+      data: {
+        labels: {{ fav_style_labels | tojson }},
+        datasets: [{
+          data: {{ fav_style_counts | tojson }},
+          backgroundColor: [
+            '#60A5FA', '#F87171', '#34D399', '#FBBF24', '#A78BFA', '#F472B6', '#6B7280'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}` } }
+        }
+      }
+    });
+  }
+
+  // === Design Activity Over Time ===
+  if (hideContainerIfNoData('designActivityChart', {{ design_counts|tojson }})) {
+    new Chart(document.getElementById('designActivityChart'), {
+      type: 'line',
+      data: {
+        labels: {{ design_dates | tojson }},
+        datasets: [{
+          label: 'Designs Generated',
+          data: {{ design_counts | tojson }},
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Count' } },
+          x: { title: { display: true, text: 'Date' } }
+        }
+      }
+    });
+  }
+
+  // === Popular Detected Styles ===
+  if (hideContainerIfNoData('popularStylesChart', {{ style_counts|tojson }})) {
+    new Chart(document.getElementById('popularStylesChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ style_labels | tojson }},
+        datasets: [{
+          label: 'Detected Count',
+          data: {{ style_counts | tojson }},
+          backgroundColor: 'rgba(234, 88, 12, 0.7)',
+          borderColor: 'rgba(234, 88, 12, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Detected' } },
+          x: { title: { display: true, text: 'Style' } }
+        }
+      }
+    });
+  }
+
+  // === Average Ratings by Style ===
+  if (hideContainerIfNoData('ratingsByStyleChart', {{ avg_rating_scores|tojson }})) {
+    new Chart(document.getElementById('ratingsByStyleChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ avg_rating_labels | tojson }},
+        datasets: [{
+          label: 'Avg Style Accuracy',
+          data: {{ avg_rating_scores | tojson }},
+          backgroundColor: 'rgba(99, 102, 241, 0.7)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 5, title: { display: true, text: 'Rating' } },
+          x: { title: { display: true, text: 'Style' } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => `Rating: ${ctx.raw}` } }
+        }
+      }
+    });
+  }
+});
+</script>
+
+{% endblock %}

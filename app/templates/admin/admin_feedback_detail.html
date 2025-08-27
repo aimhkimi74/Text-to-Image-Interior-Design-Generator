@@ -1,0 +1,399 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}SUS Feedback Detail{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-8">System Usability Scale (SUS) Feedback Detail</h1>
+    
+    <!-- Dashboard Navigation -->
+    <div class="flex justify-center mb-8 space-x-4">
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300">Dashboard</a>
+        <a href="{{ url_for('admin.admin_feedback_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300">Feedback List</a>
+        <a href="{{ url_for('admin.admin_user_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300">User Management</a>
+        <a href="{{ url_for('admin.admin_create_user') }}" class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300">Create Admin</a>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ url_for('admin.admin_feedback_list') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+            <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Back to Feedback List
+        </a>
+    </div>
+    
+    <!-- User Info -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-xl font-semibold mb-2">User Information</h2>
+                <p class="text-gray-600"><span class="font-medium">Username:</span> {{ user.username }}</p>
+                <p class="text-gray-600"><span class="font-medium">Email:</span> {{ user.email }}</p>
+                <p class="text-gray-600"><span class="font-medium">User Type:</span> {{ feedback.user_type or 'Not specified' }}</p>
+                <p class="text-gray-600"><span class="font-medium">Submitted:</span> {{ feedback.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-4xl font-bold {% if feedback.sus_score >= 68 %}text-green-600{% else %}text-red-600{% endif %} mb-1">
+                    {{ feedback.sus_score|round(1) }}
+                </div>
+                <div class="text-sm text-gray-500">SUS Score</div>
+                <div class="text-sm {% if feedback.sus_score >= 68 %}text-green-600{% else %}text-red-600{% endif %}">
+                    {% if feedback.sus_score >= 68 %}Good usability{% else %}Needs improvement{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SUS Questions and Responses -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">SUS Responses</h2>
+        
+        <div class="space-y-4">
+            <!-- Question 1 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">1. I think that I would like to use this system frequently.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q1_frequency }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q1_frequency == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 2 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">2. I found the system unnecessarily complex.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q2_complexity }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q2_complexity == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 3 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">3. I thought the system was easy to use.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q3_ease_of_use }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q3_ease_of_use == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 4 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">4. I think that I would need the support of a technical person to use this system.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q4_tech_support }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q4_tech_support == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 5 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">5. I found the various functions in this system were well integrated.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q5_integration }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q5_integration == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 6 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">6. I thought there was too much inconsistency in this system.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q6_inconsistency }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q6_inconsistency == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 7 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">7. I would imagine that most people would learn to use this system very quickly.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q7_learnability }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q7_learnability == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 8 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">8. I found the system very awkward to use.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q8_awkwardness }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q8_awkwardness == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 9 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">9. I felt very confident using the system.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q9_confidence }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q9_confidence == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Question 10 -->
+            <div class="p-4 bg-gray-50 rounded-md">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="font-medium">10. I needed to learn a lot of things before I could get going with this system.</p>
+                        <p class="text-sm text-gray-500 mt-1">Score: {{ feedback.q10_learning_curve }} / 5</p>
+                    </div>
+                    <div class="ml-4">
+                        <div class="flex items-center">
+                            {% for i in range(1, 6) %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mx-1 {% if feedback.q10_learning_curve == i %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ i }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comments -->
+    {% if feedback.comments %}
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Additional Comments</h2>
+        <div class="p-4 bg-gray-50 rounded-md">
+            <p class="whitespace-pre-line">{{ feedback.comments }}</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- SUS Score Calculation -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">SUS Score Calculation</h2>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Response</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculation</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- Odd Questions (Positive) -->
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q1 (Positive)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q1_frequency }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ feedback.q1_frequency }} - 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ feedback.q1_frequency - 1 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q3 (Positive)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q3_ease_of_use }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ feedback.q3_ease_of_use }} - 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ feedback.q3_ease_of_use - 1 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q5 (Positive)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q5_integration }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ feedback.q5_integration }} - 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ feedback.q5_integration - 1 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q7 (Positive)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q7_learnability }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ feedback.q7_learnability }} - 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ feedback.q7_learnability - 1 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q9 (Positive)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q9_confidence }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ feedback.q9_confidence }} - 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ feedback.q9_confidence - 1 }}</td>
+                    </tr>
+                    
+                    <!-- Even Questions (Negative) -->
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q2 (Negative)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q2_complexity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 - {{ feedback.q2_complexity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ 5 - feedback.q2_complexity }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q4 (Negative)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q4_tech_support }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 - {{ feedback.q4_tech_support }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ 5 - feedback.q4_tech_support }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q6 (Negative)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q6_inconsistency }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 - {{ feedback.q6_inconsistency }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ 5 - feedback.q6_inconsistency }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q8 (Negative)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q8_awkwardness }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 - {{ feedback.q8_awkwardness }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ 5 - feedback.q8_awkwardness }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Q10 (Negative)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ feedback.q10_learning_curve }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 - {{ feedback.q10_learning_curve }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ 5 - feedback.q10_learning_curve }}</td>
+                    </tr>
+                    
+                    <!-- Total -->
+                    <tr class="bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sum of Scores</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {% set sum_score = (feedback.q1_frequency - 1) + (5 - feedback.q2_complexity) + (feedback.q3_ease_of_use - 1) + (5 - feedback.q4_tech_support) + (feedback.q5_integration - 1) + (5 - feedback.q6_inconsistency) + (feedback.q7_learnability - 1) + (5 - feedback.q8_awkwardness) + (feedback.q9_confidence - 1) + (5 - feedback.q10_learning_curve) %}
+                            {{ sum_score }}
+                        </td>
+                    </tr>
+                    <tr class="bg-blue-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Final SUS Score</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sum × 2.5</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                            {{ feedback.sus_score|round(1) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

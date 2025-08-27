@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help - Living Room Style Analyzer</title>
+  <meta name="description" content="Help & FAQs for Living Room Style Analyzer—learn how to design with AI, manage sessions, rate images, save favorites, and submit feedback." />
+
+  <!-- Basic CSP (keeps inline styles working; tighten once you remove inline CSS) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 img-src 'self' data:;
+                 script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+                 font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+                 connect-src 'self';">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        referrerpolicy="no-referrer" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #fefaf6;
+    }
+    .hero-header {
+      background: linear-gradient(to right, #ffe3ca, #f8d3c6);
+      color: #2c3e50;
+      border-radius: 0 0 2rem 2rem;
+    }
+    .info-card {
+      background-color: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      padding: 2rem;
+      transition: transform 0.2s;
+    }
+    .info-card:hover {
+      transform: translateY(-4px);
+    }
+    .info-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: #e76f51;
+    }
+    .faq-item { margin-bottom: 1.5rem; }
+    .faq-question {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 0.25rem;
+    }
+    .faq-answer { color: #4b5563; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <header class="hero-header px-6 py-4 shadow-md fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-full flex justify-between items-center">
+      <!-- Logo Left -->
+      <div class="flex-shrink-0">
+        <a href="{{ url_for('views.home') }}" class="text-2xl font-bold flex items-center gap-2 text-[#2c3e50]">
+          <i class="fas fa-couch text-orange-600" aria-hidden="true"></i>
+          <span>Living Room Style Analyzer</span>
+        </a>
+      </div>
+
+      <!-- Buttons Right -->
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('views.home') }}" class="bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 text-sm">
+          <i class="fas fa-home" aria-hidden="true"></i> Home
+        </a>
+        <a href="{{ url_for('auth.profile') }}" class="bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 text-sm">
+          <i class="fas fa-user" aria-hidden="true"></i> Profile
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="bg-red-500 text-white px-3 py-1.5 rounded-full hover:bg-red-600 text-sm">
+          <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-28 pb-16 px-4">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-extrabold text-[#2c3e50] mb-3">Help & Inspiration</h1>
+        <p class="text-gray-600 text-base max-w-2xl mx-auto">
+          Everything you need to navigate the world of AI interior styling and design generation.
+          Get started, get inspired.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="info-card">
+          <h2 class="mb-3"><i class="fas fa-user-plus mr-2" aria-hidden="true"></i>Account & Login</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>Create your account to start designing.</li>
+            <li>Reset your password if needed via the login page.</li>
+            <li>Profile updates are handled from your dashboard.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h2 class="mb-3"><i class="fas fa-image mr-2" aria-hidden="true"></i>Design with AI</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>Describe your dream space using natural language.</li>
+            <li>Use “Style Preference” to guide the result or let AI choose.</li>
+            <li>Each message returns an image with analysis and details.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h2 class="mb-3"><i class="fas fa-paint-brush mr-2" aria-hidden="true"></i>Understanding Styles</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>Styles supported: Modern, Scandinavian, Industrial, Mid-Century, Traditional, Coastal, and Rustic.</li>
+            <li>Each image response includes a detected style and optional explanation.</li>
+            <li>Mismatch? Suggest your own using the feedback modal.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h2 class="mb-3"><i class="fas fa-star-half-alt mr-2" aria-hidden="true"></i>Rate and Improve</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>Rate images by relevance, quality, and style accuracy.</li>
+            <li>Your ratings help improve results for all users.</li>
+            <li>Submit feedback for style misidentification.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h2 class="mb-3"><i class="fas fa-heart mr-2" aria-hidden="true"></i>Favorites & History</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>Click the heart icon to save a design.</li>
+            <li>Access your favorited and recent designs in the Profile page.</li>
+            <li>Download any image for inspiration or reference.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h2 class="mb-3"><i class="fas fa-layer-group mr-2" aria-hidden="true"></i>Dashboard Insights</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>See your top-rated and most used styles.</li>
+            <li>Track the number of designs you’ve generated.</li>
+            <li>Edit your profile details and preferences anytime.</li>
+          </ul>
+        </div>
+
+        <div class="info-card md:col-span-2">
+          <h2 class="mb-3"><i class="fas fa-comment-dots mr-2" aria-hidden="true"></i>Submitting Feedback</h2>
+          <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
+            <li>You can provide feedback through the <strong>System Usability Scale (SUS)</strong> form.</li>
+            <li>To access it, navigate to the Feedback page under your account dashboard or visit the direct feedback link.</li>
+            <li>The form asks you to rate 10 statements on a scale from 1 to 5 and provide optional comments and user role.</li>
+            <li>Once submitted, your SUS score is calculated automatically and shown back to you as confirmation.</li>
+            <li>You may submit updated feedback again after <strong>1 day</strong>, if desired.</li>
+            <li>This helps us continuously improve the user experience across all features.</li>
+          </ul>
+        </div>
+
+        <div class="info-card md:col-span-2">
+          <h2 class="mb-3"><i class="fas fa-question-circle mr-2" aria-hidden="true"></i>FAQs</h2>
+
+          <div class="faq-item">
+            <p class="faq-question">Is it free to use?</p>
+            <p class="faq-answer">Yes! All core features are free to access and use. No subscription required.</p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">Can I use the generated images for commercial projects?</p>
+            <p class="faq-answer">Currently, generated designs are for personal use only. Commercial licensing is planned for the future.</p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">How do I recover a forgotten password?</p>
+            <p class="faq-answer">Go to the login page and click on “Forgot Password” to receive a reset <strong>code</strong> via email.</p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">Can I upload a photo of my own room?</p>
+            <p class="faq-answer">This feature is coming soon! Stay tuned for updates on photo uploads and custom room analysis.</p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">How do I delete or rename a session?</p>
+            <p class="faq-answer">Use the session menu in the sidebar to rename or remove any saved design session.</p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">What styles are supported?</p>
+            <p class="faq-answer">We support a variety of design styles including Modern, Scandinavian, Industrial, Mid-Century, Traditional, Coastal, and Rustic. More are being added regularly.</p>
+          </div>
+
+          <div class="faq-item">
+            <p class="faq-question">How can I contact support?</p>
+            <p class="faq-answer">
+              Email us at
+              <a href="mailto:livingroom.analyzer.help@gmail.com" class="text-blue-600 hover:underline">
+                livingroom.helpxxx@gmail.com
+              </a>
+              and our team will be happy to help.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
