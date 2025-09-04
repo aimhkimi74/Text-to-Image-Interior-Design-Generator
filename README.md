@@ -28,7 +28,7 @@ Features include user authentication, AI-powered image generation, favorites man
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/your-username/living-room-analyzer.git
+   git clone https://github.com/aimhkimi74/Text-to-Image-Interior-Design-Generator.git
    cd living-room-analyzer
    ```
 
