@@ -11,6 +11,12 @@ A Flask-based backend system for generating and analyzing living room design sty
 Features include user authentication, AI-powered image generation, favorites management, ratings, style feedback, and robust security.
 
 ---
+## 🔗 Quick Links
+
+- **Colab Notebook:** [PLACEHOLDER – Paste your Colab link here]  
+- **Hugging Face Model:** [PLACEHOLDER – Paste your Hugging Face model link here]
+
+---
 
 ## 📦 Features
 
