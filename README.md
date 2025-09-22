@@ -13,8 +13,8 @@ Features include user authentication, AI-powered image generation, favorites man
 ---
 ## 🔗 Quick Links
 
-- **Colab Notebook:** [PLACEHOLDER – Paste your Colab link here]  
-- **Hugging Face Model:** [PLACEHOLDER – Paste your Hugging Face model link here]
+- **Hugging Face Model:** (https://huggingface.co/aimhkimi74/Bert-Model-living-room)
+- **Hugging Face Model:** (https://huggingface.co/aimhkimi74/sd15-lora-LivingRoom)
 
 ---
 
