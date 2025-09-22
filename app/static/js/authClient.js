@@ -1,4 +1,4 @@
-// authClient.js — FINAL SAFE VERSION
+// authClient.js
 function getCSRFToken() {
   const name = "csrftoken";
   const cookies = document.cookie.split(";").map(c => c.trim());
