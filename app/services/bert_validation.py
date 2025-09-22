@@ -361,11 +361,3 @@ def format_bot_message(result):
             lines.append(f"{i}. ✅ {reason.capitalize()}")
 
     return "\n".join(lines)
-
-# Optional: run a dummy prediction once on import to warm up model
-#try:
-    #logger.info("Warming up model with dummy prompt...")
-    #validate_prompt_locally("A modern living room with wooden furniture and natural light.")
-    #logger.info("Model warm-up complete.")
-#except Exception as e:
-    #logger.error(f"Warm-up failed: {e}")
