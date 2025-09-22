@@ -92,7 +92,7 @@ async function initializeApp() {
     await createNewChat();
   }
 
-  // ✅ Move these lines outside of the try block so they always run
+  
   document.getElementById('new-design-btn')?.addEventListener('click', async () => {
     const sessionId = await createNewChat();
     console.log('✅ Created new session:', sessionId);
@@ -395,7 +395,7 @@ async function handleSendMessage() {
       return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     }
 
-    // ✅ Show user's prompt immediately
+    
     appendMessage('user', message);
     const response = await fetch('/api/generate-image', {
       method: 'POST',
@@ -691,7 +691,7 @@ async function deleteChat(button) {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCSRFToken()  
       },
-      body: JSON.stringify({ session_id: sessionId })   // ✅ unify naming
+      body: JSON.stringify({ session_id: sessionId })   
     });
 
     const data = await response.json().catch(() => ({}));
@@ -944,7 +944,6 @@ function setupRatingSystem() {
         return;
       }
 
-      // ✅ Extract detected style name from nearby bot message
       let styleTag = 'Unknown';
       const botMessage = ratingContainer.closest('.bot-message');
       if (botMessage) {
@@ -966,7 +965,7 @@ function setupRatingSystem() {
             prompt_relevance: relevance,
             image_quality: quality,
             style_accuracy: style,
-            style_tag: styleTag  // ✅ now included
+            style_tag: styleTag  
           })
         });
 
@@ -1410,7 +1409,7 @@ function scrollToMessageIfNeeded() {
 }
 
 window.addEventListener('load', function () {
-  scrollToMessageIfNeeded(); // ✅ Now it works
+  scrollToMessageIfNeeded();
 });
 
 function setupStarClickListeners() {
