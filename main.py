@@ -4,7 +4,7 @@ import requests
 from urllib.parse import urlparse
 from functools import wraps
 import time
-from dotenv import load_dotenv  # Add this to load .env file
+from dotenv import load_dotenv
 from app import create_app, db
 from flask_migrate import Migrate
 from urllib.parse import urlparse
